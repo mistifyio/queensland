@@ -47,6 +47,7 @@ func NameError(w dns.ResponseWriter, req *dns.Msg) {
 }
 
 func (s *Server) GetNode(name string) (*Node, error) {
+	name = strings.TrimSuffix(name, ".nodes.")
 	key := filepath.Join("/", s.prefix, "nodes", name)
 
 	resp, err := s.etcd.Get(key, false, false)
@@ -166,17 +167,27 @@ func (s *Server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dn
 	m.Answer = make([]dns.RR, 0, len(records))
 	m.Extra = make([]dns.RR, 0, len(records))
 	for _, record := range records {
+
+		isNode := false
+
+		target := record.Target
+		if !strings.Contains(target, ".") {
+			target = strings.Join([]string{record.Target, s.domain}, ".")
+			isNode = true
+			// should we make sure it exists before we add it?
+		}
+
 		answer := &dns.SRV{
 			Hdr:      header,
 			Priority: record.Priority,
 			Weight:   record.Weight,
 			Port:     record.Port,
-			Target:   record.Target + s.domain,
+			Target:   target,
 		}
 
 		m.Answer = append(m.Answer, answer)
 
-		if strings.Contains(record.Target, ".") {
+		if !isNode {
 			continue
 		}
 
@@ -188,7 +199,7 @@ func (s *Server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dn
 
 		extra := &dns.A{
 			Hdr: dns.RR_Header{
-				Name:   r.Question[0].Name,
+				Name:   target,
 				Rrtype: dns.TypeA,
 				Class:  r.Question[0].Qclass,
 				Ttl:    s.ttl,
@@ -205,6 +216,7 @@ func (s *Server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dn
 
 func (s *Server) NodesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
 	node, err := s.GetNode(name)
+
 	if err != nil {
 		return nil, err
 	}

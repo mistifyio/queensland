@@ -105,3 +105,4 @@ While it works, it is not very well tested.
 
 - support  RFC 2782 style lookups using \_service.\_proto.domain.
 
+- add metrics, etc

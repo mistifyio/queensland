@@ -23,14 +23,14 @@ type (
 	}
 
 	Record struct {
-		Priority uint16 `json:priority`
-		Weight   uint16 `json:weight`
-		Port     uint16 `json:port`
-		Target   string `json:target`
+		Priority uint16 `json:"priority"`
+		Weight   uint16 `json:weight"`
+		Port     uint16 `json:"port"`
+		Target   string `json:"target"`
 	}
 
 	Node struct {
-		IP net.IP `json:ip`
+		IP net.IP `json:"ip"`
 	}
 )
 

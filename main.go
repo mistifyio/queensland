@@ -43,7 +43,7 @@ func NameError(w dns.ResponseWriter, req *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetReply(req)
 	m.SetRcode(req, dns.RcodeNameError)
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 }
 
 func (s *Server) GetNode(name string) (*Node, error) {
@@ -290,7 +290,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 }
 
 func main() {

@@ -80,6 +80,7 @@ bar.local.		0	IN	A	10.10.1.3
 Note: for nodes, you generally should add them with a ttl and "touch"
 them periodically via an external mechanism.
 
+You can also set weight and priority for each service record.
 
 Queensland also allows legacy services to use it for discovery just
 doing A record lookups.

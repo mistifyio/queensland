@@ -24,7 +24,7 @@ type (
 
 	Record struct {
 		Priority uint16 `json:"priority"`
-		Weight   uint16 `json:weight"`
+		Weight   uint16 `json:"weight"`
 		Port     uint16 `json:"port"`
 		Target   string `json:"target"`
 	}

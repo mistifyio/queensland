@@ -15,38 +15,38 @@ import (
 )
 
 type (
-	Server struct {
+	server struct {
 		etcd   *etcd.Client
 		domain string
 		prefix string
 		ttl    uint32
 	}
 
-	Record struct {
+	record struct {
 		Priority uint16 `json:"priority"`
 		Weight   uint16 `json:"weight"`
 		Port     uint16 `json:"port"`
 		Target   string `json:"target"`
 	}
 
-	Node struct {
+	node struct {
 		IP net.IP `json:"ip"`
 	}
 )
 
-func IsKeyNotFound(err error) bool {
+func isKeyNotFound(err error) bool {
 	e, ok := err.(*etcd.EtcdError)
 	return ok && e.ErrorCode == etcdErr.EcodeKeyNotFound
 }
 
-func NameError(w dns.ResponseWriter, req *dns.Msg) {
+func nameError(w dns.ResponseWriter, req *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetReply(req)
 	m.SetRcode(req, dns.RcodeNameError)
 	_ = w.WriteMsg(m)
 }
 
-func (s *Server) GetNode(name string) (*Node, error) {
+func (s *server) GetNode(name string) (*node, error) {
 	name = strings.TrimSuffix(name, ".nodes.")
 	key := filepath.Join("/", s.prefix, "nodes", name)
 
@@ -56,19 +56,19 @@ func (s *Server) GetNode(name string) (*Node, error) {
 		return nil, err
 	}
 
-	var node Node
-	err = json.Unmarshal([]byte(resp.Node.Value), &node)
+	var n node
+	err = json.Unmarshal([]byte(resp.Node.Value), &n)
 	if err != nil {
 		return nil, err
 	}
 
-	if node.IP == nil {
+	if n.IP == nil {
 		return nil, nil
 	}
-	return &node, nil
+	return &n, nil
 }
 
-func (s *Server) GetService(name string) ([]*Record, error) {
+func (s *server) GetService(name string) ([]*record, error) {
 	name = strings.TrimSuffix(name, ".services.")
 
 	key := filepath.Join("/", s.prefix, "services", name)
@@ -79,28 +79,28 @@ func (s *Server) GetService(name string) ([]*Record, error) {
 		return nil, err
 	}
 
-	records := make([]*Record, 0, len(resp.Node.Nodes))
+	records := make([]*record, 0, len(resp.Node.Nodes))
 
 	for _, n := range resp.Node.Nodes {
-		var record Record
-		err := json.Unmarshal([]byte(n.Value), &record)
+		var rec record
+		err := json.Unmarshal([]byte(n.Value), &rec)
 		if err != nil {
 			log.Printf("json.Unmarshal failed for %s: %s", n.Key, err)
 			continue
 		}
 
 		// should match against a regex?
-		if record.Target == "" {
+		if rec.Target == "" {
 			continue
 		}
 
-		records = append(records, &record)
+		records = append(records, &rec)
 	}
 
 	return records, nil
 }
 
-func (s *Server) ServicesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
+func (s *server) ServicesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
 	records, err := s.GetService(name)
 
 	if err != nil {
@@ -144,7 +144,7 @@ func (s *Server) ServicesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.
 
 }
 
-func (s *Server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
+func (s *server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
 	records, err := s.GetService(name)
 	if err != nil {
 		return nil, err
@@ -214,7 +214,7 @@ func (s *Server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dn
 
 }
 
-func (s *Server) NodesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
+func (s *server) NodesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
 	node, err := s.GetNode(name)
 
 	if err != nil {
@@ -241,7 +241,7 @@ func (s *Server) NodesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg
 	return m, nil
 
 }
-func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	question := r.Question[0].Name
 	name := strings.TrimSuffix(question, s.domain)
@@ -250,7 +250,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	if len(parts) != 2 {
 		log.Printf("invalid query: %s", question)
-		NameError(w, r)
+		nameError(w, r)
 		return
 	}
 
@@ -276,8 +276,8 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	if err != nil {
 		log.Println(err)
-		if IsKeyNotFound(err) {
-			NameError(w, r)
+		if isKeyNotFound(err) {
+			nameError(w, r)
 		} else {
 			dns.HandleFailed(w, r)
 		}
@@ -286,7 +286,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	if m == nil {
 		log.Printf("%s: not found", question)
-		NameError(w, r)
+		nameError(w, r)
 		return
 	}
 
@@ -304,7 +304,7 @@ func main() {
 
 	e := etcd.NewClient(([]string{*eaddr}))
 
-	s := &Server{
+	s := &server{
 		etcd:   e,
 		domain: *domain,
 		prefix: *prefix,

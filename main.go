@@ -47,6 +47,7 @@ func nameError(w dns.ResponseWriter, req *dns.Msg) {
 }
 
 func (s *server) GetNode(name string) (*node, error) {
+	name = strings.ToLower(name)
 	name = strings.TrimSuffix(name, ".nodes.")
 	key := filepath.Join("/", s.prefix, "nodes", name)
 
@@ -170,9 +171,9 @@ func (s *server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dn
 
 		isNode := false
 
-		target := record.Target
+		target := strings.ToLower(record.Target)
 		if !strings.Contains(target, ".") {
-			target = strings.Join([]string{record.Target, s.domain}, ".")
+			target = strings.Join([]string{target, s.domain}, ".")
 			isNode = true
 			// should we make sure it exists before we add it?
 		}
@@ -311,7 +312,7 @@ func main() {
 		ttl:    uint32(*ttl),
 	}
 
-	dns.Handle(s.domain, s)
+	dns.Handle(strings.ToLower(s.domain), s)
 
 	server := &dns.Server{
 		Addr:         *address,

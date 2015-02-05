@@ -243,7 +243,7 @@ func (s *server) NodesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg
 }
 func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
-	question := r.Question[0].Name
+	question := strings.ToLower(r.Question[0].Name)
 	name := strings.TrimSuffix(question, s.domain)
 	parts := strings.Split(name, ".")
 	parts = parts[:len(parts)-1]

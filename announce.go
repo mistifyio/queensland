@@ -22,6 +22,8 @@ type serviceAnnouncement struct {
 	Check    string
 }
 
+// XXX: when process exits should we remove the key from etcd? configurable via flag?
+
 func runAnnounce(cmd *cobra.Command, args []string) {
 
 	if len(args) != 1 {
@@ -85,6 +87,8 @@ func (a *serviceAnnouncement) announce() {
 		c := exec.Command("/bin/sh", "-c", a.Check)
 		output, err := c.CombinedOutput()
 		if err != nil {
+			// should failure immediately remove the entry or should we let ttl timeout?
+			// do rise/fall style checks?
 			log.Printf("failed to run '%s' : %s : '%s'", a.Check, err, output)
 			return
 		}

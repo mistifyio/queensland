@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ type serviceAnnouncement struct {
 	Data     string
 	TTL      uint64
 	Interval time.Duration
+	Check    string
 }
 
 func runAnnounce(cmd *cobra.Command, args []string) {
@@ -66,6 +68,7 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		Data:     string(data),
 		TTL:      uint64(announceTTL),
 		Interval: time.Duration(announceInterval) * time.Second,
+		Check:    announceCheck,
 	}
 
 	a.announce()
@@ -76,6 +79,17 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 
 //TODO: run check command
 func (a *serviceAnnouncement) announce() {
+
+	if a.Check != "" {
+		// should we wrap in a timeout?
+		c := exec.Command("/bin/sh", "-c", a.Check)
+		output, err := c.CombinedOutput()
+		if err != nil {
+			log.Printf("failed to run '%s' : %s : '%s'", a.Check, err, output)
+			return
+		}
+	}
+
 	_, err := a.etcd.Set(a.Path, a.Data, a.TTL)
 	if err != nil {
 		log.Printf("failed to set %s : %s", a.Path, err)

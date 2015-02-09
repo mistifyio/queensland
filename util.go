@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
 	etcdErr "github.com/coreos/etcd/error"
 	"github.com/coreos/go-etcd/etcd"
@@ -57,6 +58,6 @@ func getNodeName() (string, error) {
 		}
 	}
 
-	return nodeName, nil
+	return strings.ToLower(nodeName), nil
 
 }

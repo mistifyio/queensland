@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -29,7 +30,12 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		log.Fatal("announce ttl must be greater than interval")
 	}
 
-	svc := args[0]
+	svc := strings.ToLower(args[0])
+
+	// need better validation of name
+	if len(svc) == 0 {
+		log.Fatal("empty service name")
+	}
 
 	port := 0
 	if len(args) >= 2 {

@@ -14,7 +14,7 @@ Queensland also provides "helpers" for node and service announcement.
 
 # Status
 
-Queensland is still under heaby development.
+Queensland is still under heavy development.
 
 # Installation
 
@@ -67,7 +67,7 @@ Usage:
 In general, you would run this as a service on every node.
 
 You could use `etcdctl` or `curl` to set the same data if desired. The
-"node mode" is a convinience as it ensures proper namespacing and data
+"node mode" is a convenience as it ensures proper namespacing and data
 format.
 
 ## Announce
@@ -112,7 +112,7 @@ check fails - it relies only on the ttl. This behavior is subject to
 change and/or will be controlled via command line flags.
 
 You could use `etcdctl` or `curl` to set the same data if desired. The
-"node mode" is a convinience as it ensures proper namespacing and data
+"node mode" is a convenience as it ensures proper namespacing and data
 format.
 
 

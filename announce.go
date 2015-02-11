@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os/exec"
-	"path/filepath"
+	"path"
 	"strings"
 	"time"
 
@@ -60,7 +60,7 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		Check:    announceCheck,
 		Data:     string(data),
 		Interval: time.Duration(announceInterval) * time.Second,
-		Path:     filepath.Join("/", etcdPrefix, "services", svc, name),
+		Path:     path.Join("/", etcdPrefix, "services", svc, name),
 		TTL:      uint64(announceTTL),
 		etcd:     etcd.NewClient(([]string{etcdAddress})),
 	}

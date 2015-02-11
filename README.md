@@ -190,4 +190,58 @@ While it works, it is not very well tested.
 - remove records on exit?
 - override port, priority, weight, etc
 - General code clean-up
+- template for check command to use Port, name, address, etc?
+
+# Example Usage
+
+An example of a node using systemd.
+
+Run the node announce mode on every node:
+
+```
+[Unit]
+Description=Queensland Node Announce
+
+[Service]
+ExecStart=/usr/sbin/queensland node
+User=nobody
+RestartSec=30s
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Suppose we have an app like:
+
+```
+[Unit]
+Description=My App
+Wants=myapp-announce
+
+[Service]
+ExecStart=/opt/myapp/bin/myapp
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Notice the `Wants=myapp-announce`
+
+And now the service announcement:
+
+```
+[Unit]
+Description=Queensland Announce MyApp
+BindsTo=myapp.service
+
+[Service]
+ExecStart=/usr/sbin/queensland announce myapp --port 8080 --check "curl http://127.0.0.1:8080/test"
+User=nobody
+RestartSec=30s
+Restart=always
+```
+
+Notice the `BindsTo=myapp.service`
+
 

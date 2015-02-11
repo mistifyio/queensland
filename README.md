@@ -36,7 +36,7 @@ running `queensland help` will show command line options.
 
 ## Node
 
-In "node" mode, queensland will announce the node. This simply means
+In _node_ mode, queensland will announce the node. This simply means
 that it will put an entry into etcd for the node to be used for base
 DNS resolution. Running `queensland node` will use the hostname and
 attempt to find the ip address of the node.  On my laptop, for
@@ -72,7 +72,7 @@ format.
 
 ## Announce
 
-Announce mode is used to announce a single instance of a service.  It
+_Announce_ mode is used to announce a single instance of a service.  It
 is generally ran on the same node as the service is running.  It is
 usually ran as a "side-car" service.
 

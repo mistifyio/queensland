@@ -23,7 +23,7 @@ type (
 )
 
 func nameError(w dns.ResponseWriter, req *dns.Msg) {
-	m := new(dns.Msg)
+	m := &dns.Msg{}
 	m.SetReply(req)
 	m.SetRcode(req, dns.RcodeNameError)
 	_ = w.WriteMsg(m)

@@ -26,6 +26,9 @@ func help(cmd *cobra.Command, _ []string) {
 var (
 	announceCheck    string
 	announceInterval uint
+	announcePort     uint
+	announceWeight   uint
+	announcePriority uint
 	announceTTL      uint
 	dnsDomain        string
 	dnsPort          uint
@@ -66,10 +69,13 @@ func main() {
 		Run:   runAnnounce,
 	}
 
-	cmdAnnounce.PersistentFlags().UintVarP(&announceTTL, "ttl", "t", 60, "announce ttl. 0 disables")
-	cmdAnnounce.PersistentFlags().UintVarP(&announceInterval, "interval", "i", 30, "announce interval")
 	cmdAnnounce.PersistentFlags().StringVarP(&announceCheck, "check", "c", "", "announce check command")
 	cmdAnnounce.PersistentFlags().StringVarP(&nodeName, "name", "n", "", "node name. will default to hostname.")
+	cmdAnnounce.PersistentFlags().UintVarP(&announceInterval, "interval", "i", 30, "announce interval")
+	cmdAnnounce.PersistentFlags().UintVarP(&announcePort, "port", "o", 0, "announce service port")
+	cmdAnnounce.PersistentFlags().UintVarP(&announcePriority, "priority", "r", 0, "announce service priority")
+	cmdAnnounce.PersistentFlags().UintVarP(&announceTTL, "ttl", "t", 60, "announce ttl. 0 disables")
+	cmdAnnounce.PersistentFlags().UintVarP(&announceWeight, "weight", "w", 0, "announce service weight")
 
 	cmdNode := &cobra.Command{
 		Use:   "node",

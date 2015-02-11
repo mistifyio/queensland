@@ -5,7 +5,6 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -41,23 +40,16 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		log.Fatal("empty service name")
 	}
 
-	port := 0
-	if len(args) >= 2 {
-		var err error
-		port, err = strconv.Atoi(args[1])
-		if err != nil {
-			log.Fatalf("failed to parse port: '%s' : %s", args[1], err)
-		}
-	}
-
 	name, err := getNodeName()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	data, err := json.Marshal(&record{
-		Port:   uint16(port),
-		Target: name,
+		Port:     uint16(announcePort),
+		Weight:   uint16(announceWeight),
+		Target:   name,
+		Priority: uint16(announcePriority),
 	})
 
 	if err != nil {
@@ -65,12 +57,12 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 	}
 
 	a := &serviceAnnouncement{
-		etcd:     etcd.NewClient(([]string{etcdAddress})),
-		Path:     filepath.Join("/", etcdPrefix, "services", svc, name),
-		Data:     string(data),
-		TTL:      uint64(announceTTL),
-		Interval: time.Duration(announceInterval) * time.Second,
 		Check:    announceCheck,
+		Data:     string(data),
+		Interval: time.Duration(announceInterval) * time.Second,
+		Path:     filepath.Join("/", etcdPrefix, "services", svc, name),
+		TTL:      uint64(announceTTL),
+		etcd:     etcd.NewClient(([]string{etcdAddress})),
 	}
 
 	a.announce()

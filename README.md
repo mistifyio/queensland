@@ -88,17 +88,17 @@ $ etcdctl get /queensland/services/www/helo
 The node name, etc, can be overridden on the command line:
 ```
 $ queensland help announce
-Usage:
-  queensland announce name [flags]
-
  Available Flags:
   -c, --check="": announce check command
   -e, --etcd="http://127.0.0.1:4001": etcd endpoint
   -h, --help=false: help for announce
   -i, --interval=30: announce interval
   -n, --name="": node name. will default to hostname.
+  -o, --port=0: announce service port
   -p, --prefix="/queensland": etcd prefix
+  -r, --priority=0: announce service priority
   -t, --ttl=60: announce ttl. 0 disables
+  -w, --weight=0: announce service weight
   ```
 
 A service announcement can optionally call a check command:

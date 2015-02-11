@@ -199,6 +199,7 @@ An example of a node using systemd.
 Run the node announce mode on every node:
 
 ```
+# /etc/systemd/system/node-announce.service
 [Unit]
 Description=Queensland Node Announce
 
@@ -215,6 +216,7 @@ WantedBy=multi-user.target
 Suppose we have an app like:
 
 ```
+# /etc/systemd/system/myapp.service
 [Unit]
 Description=My App
 Wants=myapp-announce
@@ -231,6 +233,7 @@ Notice the `Wants=myapp-announce`
 And now the service announcement:
 
 ```
+# /etc/systemd/system/myapp-announce.service
 [Unit]
 Description=Queensland Announce MyApp
 BindsTo=myapp.service

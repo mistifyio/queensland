@@ -71,7 +71,6 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 	}
 }
 
-//TODO: run check command
 func (a *serviceAnnouncement) announce() {
 
 	if a.Check != "" {

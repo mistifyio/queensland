@@ -47,6 +47,7 @@ func (s *server) GetNode(name string) (*node, error) {
 	}
 
 	if n.IP == nil {
+		log.Printf("node %s has no address", name)
 		return nil, nil
 	}
 	return &n, nil

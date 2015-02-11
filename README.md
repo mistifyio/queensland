@@ -112,7 +112,7 @@ check fails - it relies only on the ttl. This behavior is subject to
 change and/or will be controlled via command line flags.
 
 You could use `etcdctl` or `curl` to set the same data if desired. The
-"node mode" is a convenience as it ensures proper namespacing and data
+"announce mode" is a convenience as it ensures proper namespacing and data
 format.
 
 

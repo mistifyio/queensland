@@ -219,7 +219,7 @@ Suppose we have an app like:
 # /etc/systemd/system/myapp.service
 [Unit]
 Description=My App
-Wants=myapp-announce
+Wants=myapp-announce.service
 
 [Service]
 ExecStart=/opt/myapp/bin/myapp

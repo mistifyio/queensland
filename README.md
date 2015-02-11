@@ -10,7 +10,7 @@ simple.
 Queensland supports basic service discovery via DNS using either A or
 SRV lookups.
 
-Queensland also provides "helpers" for node and service announcement.
+Queensland also provides _helpers_ for node and service announcement.
 
 # Status
 

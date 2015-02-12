@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net"
 
 	"github.com/spf13/cobra"
@@ -94,6 +93,6 @@ func main() {
 		cmdAnnounce,
 		cmdNode,
 	)
-	log.Fatal(root.Execute())
+	_ = root.Execute()
 
 }

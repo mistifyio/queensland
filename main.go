@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net"
 
 	"github.com/spf13/cobra"
@@ -20,7 +21,7 @@ type (
 )
 
 func help(cmd *cobra.Command, _ []string) {
-	cmd.Help()
+	_ = cmd.Help()
 }
 
 var (
@@ -93,6 +94,6 @@ func main() {
 		cmdAnnounce,
 		cmdNode,
 	)
-	root.Execute()
+	log.Fatal(root.Execute())
 
 }

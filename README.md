@@ -160,7 +160,7 @@ helo.local.		0	IN	A	192.168.1.56
 Notice we can lookup the service using an A or an SRV lookup.
 
 
-You can also do (http://en.wikipedia.org/wiki/SRV_record)[RFC 2782]
+You can also do [RFC 2782](http://en.wikipedia.org/wiki/SRV_record)
 style lookups for services:
 
 ```

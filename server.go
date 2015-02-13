@@ -22,6 +22,12 @@ type (
 	}
 )
 
+const (
+	UnknownType = iota
+	NodeType
+	ServiceType
+)
+
 func nameError(w dns.ResponseWriter, req *dns.Msg) {
 	m := &dns.Msg{}
 	m.SetReply(req)
@@ -224,35 +230,65 @@ func (s *server) NodesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg
 	}
 
 	return m, nil
-
 }
+
+func toType(s string) int {
+	switch s {
+	case "services":
+		return ServiceType
+	case "nodes":
+		return NodeType
+	}
+	return UnknownType
+}
+
+func checkName(qType uint16, name string) (string, int) {
+	parts := strings.Split(name, ".")
+	parts = parts[:len(parts)-1]
+
+	switch len(parts) {
+	case 2:
+		return parts[0], toType(parts[1])
+	case 3:
+		// horrible hack to munge _service._protocol.services.<domain> queries
+
+		if qType == dns.TypeSRV && parts[2] == "services" && (parts[1] == "_tcp" || parts[1] == "_udp") {
+			n := parts[0]
+			if len(n) > 1 && (string([]rune(n)[0]) == "_") {
+				return strings.TrimPrefix(n, "_"), ServiceType
+			}
+		}
+	}
+	// just horrible...
+	return "", UnknownType
+}
+
 func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	question := strings.ToLower(r.Question[0].Name)
 	name := strings.TrimSuffix(question, s.domain)
-	parts := strings.Split(name, ".")
-	parts = parts[:len(parts)-1]
 
-	if len(parts) != 2 {
+	qType := r.Question[0].Qtype
+
+	name, rType := checkName(qType, name)
+
+	if name == "" || rType == UnknownType {
 		log.Printf("invalid query: %s", question)
 		nameError(w, r)
 		return
 	}
 
-	rType := parts[1]
-	qType := r.Question[0].Qtype
-
 	var m *dns.Msg
 	var err error
 	switch rType {
-	case "services":
+	case ServiceType:
 		switch qType {
 		case dns.TypeA:
 			m, err = s.ServicesA(w, r, name)
 		case dns.TypeSRV:
 			m, err = s.ServicesSRV(w, r, name)
 		}
-	case "nodes":
+	case NodeType:
 		switch qType {
 		case dns.TypeA:
 			m, err = s.NodesA(w, r, name)

@@ -160,6 +160,23 @@ helo.local.		0	IN	A	192.168.1.56
 Notice we can lookup the service using an A or an SRV lookup.
 
 
+You can also do [RFC 2782](http://en.wikipedia.org/wiki/SRV_record)
+style lookups for services:
+
+```
+$ dig @127.0.0.1 -p 15353 _www._tcp.services.local SRV
+;; ANSWER SECTION:
+www.services.local.	0	IN	SRV	0 0 0 helo.local.
+
+;; ADDITIONAL SECTION:
+helo.local.		0	IN	A	192.168.1.56
+
+```
+
+This only works for SRV lookups, not A.  Also, the protocol must be
+`_udp` or `_tcp` but it does not matter which.
+
+
 You can also add external services:
 
 ```
@@ -185,10 +202,8 @@ While it works, it is not very well tested.
 
 # TODO
 
-- support  RFC 2782 style lookups using \_service.\_proto.domain.
 - add metrics, etc
 - remove records on exit?
-- override port, priority, weight, etc
 - General code clean-up
 - template for check command to use Port, name, address, etc?
 

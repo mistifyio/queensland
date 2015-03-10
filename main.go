@@ -40,6 +40,7 @@ var (
 	nodeIP           string
 	nodeName         string
 	nodeTTL          uint
+	removeOnExit     bool
 )
 
 func main() {
@@ -76,6 +77,7 @@ func main() {
 	cmdAnnounce.PersistentFlags().UintVarP(&announcePriority, "priority", "r", 0, "announce service priority")
 	cmdAnnounce.PersistentFlags().UintVarP(&announceTTL, "ttl", "t", 60, "announce ttl. 0 disables")
 	cmdAnnounce.PersistentFlags().UintVarP(&announceWeight, "weight", "w", 0, "announce service weight")
+	cmdAnnounce.PersistentFlags().BoolVarP(&removeOnExit, "remove", "", false, "remove key on exit")
 
 	cmdNode := &cobra.Command{
 		Use:   "node",
@@ -87,6 +89,7 @@ func main() {
 	cmdNode.PersistentFlags().UintVarP(&nodeInterval, "interval", "i", 300, "announce interval")
 	cmdNode.PersistentFlags().StringVarP(&nodeName, "name", "n", "", "node name. will default to hostname.")
 	cmdNode.PersistentFlags().StringVarP(&nodeIP, "address", "a", "", "node addresses. will default to first non-localhost IP")
+	cmdNode.PersistentFlags().BoolVarP(&removeOnExit, "remove", "", false, "remove key on exit")
 
 	root.AddCommand(
 		cmdServer,

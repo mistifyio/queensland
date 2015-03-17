@@ -8,14 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/etcd/client"
 	"github.com/miekg/dns"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 )
 
 type (
 	server struct {
-		etcd   *etcd.Client
+		etcd   client.Client
 		domain string
 		prefix string
 		ttl    uint32
@@ -35,12 +36,22 @@ func nameError(w dns.ResponseWriter, req *dns.Msg) {
 	_ = w.WriteMsg(m)
 }
 
+func (s *server) getKey(key string, recursive bool) (*client.Response, error) {
+
+	kAPI := client.NewKeysAPI(s.etcd)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return kAPI.Get(ctx, key, &client.GetOptions{Recursive: recursive})
+}
+
 func (s *server) GetNode(name string) (*node, error) {
 	name = strings.ToLower(name)
 	name = strings.TrimSuffix(name, ".nodes.")
 	key := filepath.Join("/", s.prefix, "nodes", name)
 
-	resp, err := s.etcd.Get(key, false, false)
+	resp, err := s.getKey(key, false)
 
 	if err != nil {
 		return nil, err
@@ -56,6 +67,7 @@ func (s *server) GetNode(name string) (*node, error) {
 		log.Printf("node %s has no address", name)
 		return nil, nil
 	}
+
 	return &n, nil
 }
 
@@ -64,7 +76,7 @@ func (s *server) GetService(name string) ([]*record, error) {
 
 	key := filepath.Join("/", s.prefix, "services", name)
 
-	resp, err := s.etcd.Get(key, false, true)
+	resp, err := s.getKey(key, true)
 
 	if err != nil {
 		return nil, err
@@ -92,6 +104,7 @@ func (s *server) GetService(name string) ([]*record, error) {
 }
 
 func (s *server) ServicesA(w dns.ResponseWriter, r *dns.Msg, name string) (*dns.Msg, error) {
+
 	records, err := s.GetService(name)
 
 	if err != nil {
@@ -317,7 +330,15 @@ func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 // TODO: start a simple http status interface.  should be a different service?
 
 func runServer(cmd *cobra.Command, args []string) {
-	e := etcd.NewClient(([]string{etcdAddress}))
+
+	cfg := client.Config{
+		Endpoints: []string{etcdAddress},
+		Transport: client.DefaultTransport,
+	}
+	c, err := client.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	parts := strings.Split(dnsDomain, ".")
 	dom := make([]string, 0, len(parts))
@@ -328,7 +349,7 @@ func runServer(cmd *cobra.Command, args []string) {
 	}
 
 	s := &server{
-		etcd:   e,
+		etcd:   c,
 		domain: strings.ToLower(strings.Join(dom, ".") + "."),
 		prefix: etcdPrefix,
 		ttl:    uint32(dnsTTL),

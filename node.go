@@ -7,22 +7,28 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/etcd/client"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 )
 
 type nodeAnnouncement struct {
 	IP   net.IP
 	Path string
-	etcd *etcd.Client
+	etcd client.Client
 	Data string
 }
 
 func (a *nodeAnnouncement) announce() {
-	_, err := a.etcd.Set(a.Path, a.Data, uint64(nodeTTL))
+
+	kAPI := client.NewKeysAPI(a.etcd)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := kAPI.Set(ctx, a.Path, a.Data, &client.SetOptions{TTL: time.Duration(nodeTTL) * time.Second})
 	if err != nil {
 		log.Printf("failed to set %s : %s", a.Path, err)
 	}
+
 }
 
 func runNode(cmd *cobra.Command, args []string) {
@@ -45,8 +51,17 @@ func runNode(cmd *cobra.Command, args []string) {
 		log.Fatal("json failure: %s", err)
 	}
 
+	cfg := client.Config{
+		Endpoints: []string{etcdAddress},
+		Transport: client.DefaultTransport,
+	}
+	c, err := client.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	a := &nodeAnnouncement{
-		etcd: etcd.NewClient(([]string{etcdAddress})),
+		etcd: c,
 		Path: filepath.Join("/", etcdPrefix, "nodes", name),
 		IP:   ip,
 		Data: string(data),

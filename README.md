@@ -16,6 +16,8 @@ Queensland also provides _helpers_ for node and service announcement.
 
 Queensland is still under heavy development.
 
+Currently, only IPv4 addresses are supported.
+
 # Installation
 
 `go get github.com/mistifyio/queensland`

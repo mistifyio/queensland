@@ -29,6 +29,9 @@ func getNodeIP() (net.IP, error) {
 				// log error?
 				continue
 			}
+			if ip.To4() == nil {
+				continue
+			}
 			if ip.IsGlobalUnicast() {
 				nodeIP = ip.String()
 				break

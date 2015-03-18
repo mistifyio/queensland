@@ -29,6 +29,9 @@ func getNodeIP() (net.IP, error) {
 				// log error?
 				continue
 			}
+			if ip.To4() == nil {
+				continue
+			}
 			if ip.IsGlobalUnicast() {
 				nodeIP = ip.String()
 				break
@@ -45,6 +48,10 @@ func getNodeIP() (net.IP, error) {
 		return nil, fmt.Errorf("failed to parse address: %s", nodeIP)
 	}
 
+	// XXX: we currently only correctly handle v4
+	if ip.To4() == nil {
+		return nil, fmt.Errorf("not an ipv4 address: %s", nodeIP)
+	}
 	return ip, nil
 
 }

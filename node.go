@@ -42,7 +42,7 @@ func runNode(cmd *cobra.Command, args []string) {
 	})
 
 	if err != nil {
-		log.Fatal("json failure: %s", err)
+		log.Fatalf("json failure: %s\n", err)
 	}
 
 	a := &nodeAnnouncement{

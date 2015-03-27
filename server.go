@@ -22,6 +22,7 @@ type (
 	}
 )
 
+// DNS requester types
 const (
 	UnknownType = iota
 	NodeType

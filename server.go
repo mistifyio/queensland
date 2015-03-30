@@ -164,7 +164,7 @@ func (s *server) ServicesSRV(w dns.ResponseWriter, r *dns.Msg, name string) (*dn
 
 		target := strings.ToLower(record.Target)
 		if !strings.Contains(target, ".") {
-			target = strings.Join([]string{target, s.domain}, ".")
+			target = strings.Join([]string{target, "nodes", s.domain}, ".")
 			isNode = true
 			// should we make sure it exists before we add it?
 		}

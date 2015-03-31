@@ -63,10 +63,15 @@ Usage:
   -i, --interval=300: announce interval
   -n, --name="": node name. will default to hostname.
   -p, --prefix="/queensland": etcd prefix
+        --remove=false: remove key on exit
   -t, --ttl=0: announce ttl.  0 disables
   ```
 
 In general, you would run this as a service on every node.
+
+The record, by default, is not removed on exit, but relies on the
+ttl. Using the `--remove` flag will attempt to remove the key when the
+process exits.
 
 You could use `etcdctl` or `curl` to set the same data if desired. The
 "node mode" is a convenience as it ensures proper namespacing and data
@@ -98,6 +103,7 @@ $ queensland help announce
   -n, --name="": node name. will default to hostname.
   -o, --port=0: announce service port
   -p, --prefix="/queensland": etcd prefix
+        --remove=false: remove key on exit
   -r, --priority=0: announce service priority
   -t, --ttl=60: announce ttl. 0 disables
   -w, --weight=0: announce service weight
@@ -109,9 +115,9 @@ A service announcement can optionally call a check command:
 And it will only put the key when this command returns 0. The check
 command is ran using "sh -c".
 
-Currently, the record is not removed when queensland exits or the
-check fails - it relies only on the ttl. This behavior is subject to
-change and/or will be controlled via command line flags.
+The record, by default, is not removed on exit, but relies on the
+ttl. Using the `--remove` flag will attempt to remove the key when the
+process exits.
 
 You could use `etcdctl` or `curl` to set the same data if desired. The
 "announce mode" is a convenience as it ensures proper namespacing and data

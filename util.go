@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	etcdErr "github.com/coreos/etcd/error"
 	"github.com/coreos/go-etcd/etcd"
@@ -67,4 +70,20 @@ func getNodeName() (string, error) {
 
 	return strings.ToLower(nodeName), nil
 
+}
+
+func handleRemoveOnExit(e *etcd.Client, key string) {
+	if removeOnExit {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		go func() {
+			for _ = range c {
+				_, err := e.Delete(key, false)
+				if err != nil {
+					log.Printf("delete of '%s' failed: %s", key, err)
+				}
+				os.Exit(0)
+			}
+		}()
+	}
 }

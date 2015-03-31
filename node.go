@@ -52,6 +52,8 @@ func runNode(cmd *cobra.Command, args []string) {
 		Data: string(data),
 	}
 
+	handleRemoveOnExit(a.etcd, a.Path)
+
 	a.announce()
 	for _ = range time.Tick(time.Duration(nodeInterval) * time.Second) {
 		a.announce()

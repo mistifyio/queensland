@@ -65,6 +65,8 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		etcd:     etcd.NewClient(([]string{etcdAddress})),
 	}
 
+	handleRemoveOnExit(a.etcd, a.Path)
+
 	a.announce()
 	for _ = range time.Tick(a.Interval) {
 		a.announce()

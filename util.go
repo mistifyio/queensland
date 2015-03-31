@@ -9,13 +9,13 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/coreos/etcd/client"
 	etcdErr "github.com/coreos/etcd/error"
-	"github.com/coreos/go-etcd/etcd"
 )
 
 func isKeyNotFound(err error) bool {
-	e, ok := err.(*etcd.EtcdError)
-	return ok && e.ErrorCode == etcdErr.EcodeKeyNotFound
+	e, ok := err.(*client.Error)
+	return ok && e.Code == etcdErr.EcodeKeyNotFound
 }
 
 func getNodeIP() (net.IP, error) {

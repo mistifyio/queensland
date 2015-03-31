@@ -8,13 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/etcd/client"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 )
 
 type serviceAnnouncement struct {
 	Path     string
-	etcd     *etcd.Client
+	etcd     client.Client
 	Data     string
 	TTL      uint64
 	Interval time.Duration
@@ -56,13 +57,22 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		log.Fatalf("json failure: %s\n", err)
 	}
 
+	cfg := client.Config{
+		Endpoints: []string{etcdAddress},
+		Transport: client.DefaultTransport,
+	}
+	c, err := client.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	a := &serviceAnnouncement{
 		Check:    announceCheck,
 		Data:     string(data),
 		Interval: time.Duration(announceInterval) * time.Second,
 		Path:     path.Join("/", etcdPrefix, "services", svc, name),
 		TTL:      uint64(announceTTL),
-		etcd:     etcd.NewClient(([]string{etcdAddress})),
+		etcd:     c,
 	}
 
 	handleRemoveOnExit(a.etcd, a.Path)
@@ -87,8 +97,12 @@ func (a *serviceAnnouncement) announce() {
 		}
 	}
 
-	_, err := a.etcd.Set(a.Path, a.Data, a.TTL)
+	kAPI := client.NewKeysAPI(a.etcd)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := kAPI.Set(ctx, a.Path, a.Data, &client.SetOptions{TTL: time.Duration(nodeTTL) * time.Second})
 	if err != nil {
 		log.Printf("failed to set %s : %s", a.Path, err)
 	}
+
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 
+	logx "github.com/mistifyio/mistify-logrus-ext"
 	"github.com/spf13/cobra"
 )
 
@@ -44,6 +45,7 @@ var (
 )
 
 func main() {
+	_ = logx.DefaultSetup("error")
 
 	root := &cobra.Command{
 		Use:  "queensland",

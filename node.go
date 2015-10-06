@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net"
 	"path/filepath"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,11 @@ type nodeAnnouncement struct {
 func (a *nodeAnnouncement) announce() {
 	_, err := a.etcd.Set(a.Path, a.Data, uint64(nodeTTL))
 	if err != nil {
-		log.Printf("failed to set %s : %s", a.Path, err)
+		log.WithFields(log.Fields{
+			"path":  a.Path,
+			"data":  a.Data,
+			"error": err,
+		}).Error("failed to set path data")
 	}
 }
 
@@ -29,20 +33,26 @@ func runNode(cmd *cobra.Command, args []string) {
 
 	name, err := getNodeName()
 	if err != nil {
-		log.Fatal(err)
+		log.WithField("error", err).Fatal("failed to get node name")
 	}
 
 	ip, err := getNodeIP()
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{
+			"name":  name,
+			"error": err,
+		}).Fatal("failed to get node ip")
 	}
 
-	data, err := json.Marshal(&node{
-		IP: ip,
-	})
+	n := &node{IP: ip}
+	data, err := json.Marshal(n)
 
 	if err != nil {
-		log.Fatalf("json failure: %s\n", err)
+		log.WithFields(log.Fields{
+			"name":  name,
+			"node":  n,
+			"error": err,
+		}).Fatal("failed to json marshal node")
 	}
 
 	a := &nodeAnnouncement{

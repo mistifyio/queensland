@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"path/filepath"
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/miekg/dns"
 	"github.com/spf13/cobra"
@@ -54,7 +54,7 @@ func (s *server) GetNode(name string) (*node, error) {
 	}
 
 	if n.IP == nil {
-		log.Printf("node %s has no address", name)
+		log.WithField("node", name).Warn("node has no address")
 		return nil, nil
 	}
 	return &n, nil
@@ -77,7 +77,10 @@ func (s *server) GetService(name string) ([]*record, error) {
 		var rec record
 		err := json.Unmarshal([]byte(n.Value), &rec)
 		if err != nil {
-			log.Printf("json.Unmarshal failed for %s: %s", n.Key, err)
+			log.WithFields(log.Fields{
+				"key":   n.Key,
+				"error": err,
+			}).Error("failed to unmarshal node json")
 			continue
 		}
 
@@ -274,7 +277,7 @@ func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	name, rType := checkName(qType, name)
 
 	if name == "" || rType == UnknownType {
-		log.Printf("invalid query: %s", question)
+		log.WithField("query", question).Info("invalid dns query")
 		nameError(w, r)
 		return
 	}
@@ -297,7 +300,11 @@ func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	if err != nil {
-		log.Println(err)
+		log.WithFields(log.Fields{
+			"query": question,
+			"error": err,
+		}).Error("failed to serve valid dns response")
+
 		if isKeyNotFound(err) {
 			nameError(w, r)
 		} else {
@@ -307,7 +314,7 @@ func (s *server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	if m == nil {
-		log.Printf("%s: not found", question)
+		log.WithField("query", question).Info("not found")
 		nameError(w, r)
 		return
 	}
@@ -344,5 +351,6 @@ func runServer(cmd *cobra.Command, args []string) {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Fatal(server.ListenAndServe())
+	err := server.ListenAndServe()
+	log.WithField("error", err).Fatal("server error")
 }

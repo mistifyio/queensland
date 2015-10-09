@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 
+	log "github.com/Sirupsen/logrus"
 	etcdErr "github.com/coreos/etcd/error"
 	"github.com/coreos/go-etcd/etcd"
 )
@@ -80,7 +80,10 @@ func handleRemoveOnExit(e *etcd.Client, key string) {
 			for _ = range c {
 				_, err := e.Delete(key, false)
 				if err != nil {
-					log.Printf("delete of '%s' failed: %s", key, err)
+					log.WithFields(log.Fields{
+						"key":   key,
+						"error": err,
+					}).Error("failed to delete key")
 				}
 				os.Exit(0)
 			}

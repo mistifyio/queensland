@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"os/exec"
 	"path"
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,10 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 	}
 
 	if announceTTL != 0 && announceTTL < announceInterval {
-		log.Fatal("announce ttl must be greater than interval")
+		log.WithFields(log.Fields{
+			"announceTTL":      announceTTL,
+			"announceInterval": announceInterval,
+		}).Fatal("announce ttl must be greater than interval")
 	}
 
 	svc := strings.ToLower(args[0])
@@ -45,15 +48,19 @@ func runAnnounce(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	data, err := json.Marshal(&record{
+	r := &record{
 		Port:     uint16(announcePort),
 		Weight:   uint16(announceWeight),
 		Target:   name,
 		Priority: uint16(announcePriority),
-	})
+	}
+	data, err := json.Marshal(r)
 
 	if err != nil {
-		log.Fatalf("json failure: %s\n", err)
+		log.WithFields(log.Fields{
+			"record": r,
+			"error":  err,
+		}).Fatal("failed to marshal record json")
 	}
 
 	a := &serviceAnnouncement{
@@ -82,13 +89,20 @@ func (a *serviceAnnouncement) announce() {
 		if err != nil {
 			// should failure immediately remove the entry or should we let ttl timeout?
 			// do rise/fall style checks?
-			log.Printf("failed to run '%s' : %s : '%s'", a.Check, err, output)
+			log.WithFields(log.Fields{
+				"check":  a.Check,
+				"error":  err,
+				"output": output,
+			}).Error("failed to run check")
 			return
 		}
 	}
 
 	_, err := a.etcd.Set(a.Path, a.Data, a.TTL)
 	if err != nil {
-		log.Printf("failed to set %s : %s", a.Path, err)
+		log.WithFields(log.Fields{
+			"path":  a.Path,
+			"error": err,
+		}).Error("failed to set path data")
 	}
 }
